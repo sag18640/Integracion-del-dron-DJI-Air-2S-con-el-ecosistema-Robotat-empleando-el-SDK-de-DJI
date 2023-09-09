@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Integración DJI y Optitrack</string>
+    <string name="sdk_registration_message">SDK Registration Failed. Please check the bundle ID and your network
+        connectivity. </string>
+    <string name="sdk_registration_success_message">SDK Registered Successfully.</string>
+    <string name="sdk_registration_doing_message">Registering, pls wait…</string>
+    <string name="activaci_n">Activación</string>
+    <string name="menu">Menú</string>
+    <string name="button">Elevar</string>
+    <string name="success">Success</string>
+    <string name="descender">Descender</string>
+</resources>
