@@ -17,10 +17,13 @@ import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.Attitude;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.flightcontroller.LocationCoordinate3D;
+import dji.common.model.LocationCoordinate2D;
 import dji.common.util.CommonCallbacks;
 import dji.keysdk.FlightControllerKey;
 import dji.keysdk.KeyManager;
 import dji.sdk.flightcontroller.FlightController;
+//import dji.sdk.mission.timeline.actions;
+
 
 import dji.sdk.flightcontroller.Simulator;
 
@@ -52,6 +55,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.ServerSocket;
+import java.io.IOException;
+import org.json.JSONObject;
 
 /**
  * La clase vuelo representa el panel de control para operar el dron integrando distintas verificaciones de componentes visuales como, botones, joysticks,etc
@@ -66,6 +72,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
      * Boton para elevacion del dron
      */
     private Button buttonElev;
+    private Button buttonSubirAuto;
+    private Button buttonBajarAuto;
     /**
      * Boton para aterrizaje del dron
      */
@@ -86,6 +94,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
      * Controlador de vuelo para interactuar con el dron.
      */
     private FlightController flightController = null;
+
     /**
      * Estado actual del controlador de vuelo.
      */
@@ -114,6 +123,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
      * Joystick izquierdo en pantalla para controlar el dron.
      */
     private OnScreenJoystick screenJoystickLeft;
+
+    private ServerSocket serverSocket;
 
     /**
      * Vista de texto para mostrar información.
@@ -148,7 +159,12 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
      * Indicador que muestra si la tarea de datos del stick virtual está programada.
      */
     private boolean isVirtualStickDataTaskScheduled = false;
-
+    private enum DesiredAction {
+        NONE,
+        ASCEND,
+        DESCEND
+    }
+    private DesiredAction currentDesiredAction = DesiredAction.NONE;
     /**
      * Constructor que inicializa el contexto y configura la interfaz de usuario.
      * @param context Contexto de la aplicación.
@@ -181,34 +197,43 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         }
 
         protected String doInBackground(Void... voids) {
-            String response = "";
+            String clientMessage = "";
 
             try {
-                String serverIP = "172.20.10.3";
-                int serverPort = 10000;
+                Log.e(TAG, "Esperando conexión entrante...");
+                Socket clientSocket = serverSocket.accept();
+                Log.e(TAG, "Conexión aceptada de: " + clientSocket.getInetAddress());
 
-                Socket socket = new Socket(serverIP, serverPort);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 
+                clientMessage = in.readLine();
+                Log.e(TAG, "Mensaje recibido: " + clientMessage);
 
-                String paramsStr = param1 + "," + param2 + "," + param3 + "," + param4;
-                out.println(paramsStr);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("PITCH", param1);
+                jsonObject.put("ROLL", param2);
+                jsonObject.put("YAW", param3);
+                jsonObject.put("ALTURA", param4);
+                out.println(jsonObject.toString());
+//                out.println("holpppp");
+                Log.e(TAG, "Mensaje enviado: " + jsonObject.toString());
 
-                response = in.readLine();
+                clientSocket.close();
+                Log.e(TAG, "Conexión con el cliente cerrada.");
 
-                socket.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            return response;
+            return clientMessage;
         }
 
 
         @Override
         protected void onPostExecute(String response) {
             Log.e(TAG, "COMUNICACION TCP: " + response);
+//            showToast(jsonObject.toString());
             showToast("Respuesta del servidor: " + response);
         }
     }
@@ -239,6 +264,13 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
             isVirtualStickDataTaskScheduled = false;
         }
         tearDownListeners();
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error al cerrar ServerSocket: " + e.getMessage());
+        }
         super.onDetachedFromWindow();
     }
     /**
@@ -250,6 +282,33 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         layoutInflater.inflate(R.layout.vuelo, this, true);
         initParams();
         initUI();
+        flightController.setStateCallback(new FlightControllerState.Callback() {
+            @Override
+            public void onUpdate(FlightControllerState flightControllerState) {
+                // Obtener la ubicación actual del dron
+                LocationCoordinate3D currentLocation = flightControllerState.getAircraftLocation();
+
+                switch (currentDesiredAction) {
+                    case ASCEND:
+                        // Cambiar la altitud a 2 metros y mover 5 metros hacia adelante
+                        setAltitude(currentLocation, 4.0);
+                        moveForward(currentLocation, 5.0);
+                        break;
+                    case DESCEND:
+                        // Cambiar la altitud a 1 metro
+                        setAltitude(currentLocation, 1.0);
+                        break;
+                    case NONE:
+                        // No hacer nada
+                        break;
+                }
+            }
+        });
+        try {
+            serverSocket = new ServerSocket(50000); // Inicializa el ServerSocket aquí
+        } catch (IOException e) {
+            Log.e(TAG, "Error al inicializar ServerSocket: " + e.getMessage());
+        }
     }
     /**
      * Inicializa los parámetros para el control de vuelo y el simulador.
@@ -296,6 +355,10 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         buttonElev.setOnClickListener(this);
         buttonBajar=(Button) findViewById(R.id.buttonBajar);
         buttonBajar.setOnClickListener(this);
+        buttonSubirAuto=(Button) findViewById(R.id.buttonSubirAuto);
+        buttonSubirAuto.setOnClickListener(this);
+        buttonBajarAuto=(Button) findViewById(R.id.buttonBajarAuto);
+        buttonBajarAuto.setOnClickListener(this);
         screenJoystickRight = (OnScreenJoystick) findViewById(R.id.directionJoystickRight);
         screenJoystickLeft = (OnScreenJoystick) findViewById(R.id.directionJoystickLeft);
 
@@ -479,6 +542,12 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                     }
                 });
                 break;
+            case R.id.buttonSubirAuto:
+                currentDesiredAction = DesiredAction.ASCEND;
+                break;
+            case R.id.buttonBajarAuto:
+                currentDesiredAction = DesiredAction.DESCEND;
+                break;
             default:
                 break;
         }
@@ -556,5 +625,38 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> Toast.makeText(getContext(), toastMsg, Toast.LENGTH_LONG).show());
 
+    }
+    private void setAltitude(LocationCoordinate3D currentLocation, double newAltitude) {
+        // Use Virtual Stick to control altitude
+        // You might want to ensure that Virtual Stick is enabled before reaching this point
+        FlightControlData controlData = new FlightControlData(0, 0, 0, (float) newAltitude);
+        flightController.sendVirtualStickFlightControlData(controlData, new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    // Successfully set altitude
+                } else {
+                    // Handle error
+                }
+            }
+        });
+    }
+
+
+    private void moveForward(LocationCoordinate3D currentLocation, double distanceInMeters) {
+        // Use Virtual Stick to control movement
+        // You might want to ensure that Virtual Stick is enabled before reaching this point
+        float pitch = (float) (distanceInMeters / 100); // Assume 100ms command interval, this is just for demonstration
+        FlightControlData controlData = new FlightControlData(0, 0, pitch, currentLocation.getAltitude());
+        flightController.sendVirtualStickFlightControlData(controlData, new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    // Successfully moved
+                } else {
+                    // Handle error
+                }
+            }
+        });
     }
 }
