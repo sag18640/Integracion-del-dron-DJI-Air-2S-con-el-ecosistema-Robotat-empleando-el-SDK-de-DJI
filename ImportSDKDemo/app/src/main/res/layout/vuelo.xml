@@ -106,9 +106,32 @@
         android:background="@mipmap/joystick_bg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.907"
+        app:layout_constraintHorizontal_bias="0.911"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.953" />
+        app:layout_constraintVertical_bias="0.973" />
+
+    <Button
+        android:id="@+id/buttonSubirAuto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Autonomo2"
+        app:layout_constraintBottom_toTopOf="@+id/directionJoystickLeft"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/buttonElev"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.918" />
+
+    <Button
+        android:id="@+id/buttonBajarAuto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Autonomo1"
+        app:layout_constraintBottom_toTopOf="@+id/directionJoystickRight"
+        app:layout_constraintEnd_toStartOf="@+id/buttonElev"
+        app:layout_constraintHorizontal_bias="0.397"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.918" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -52,8 +52,11 @@ import androidx.annotation.NonNull;
 
 //Comunicacion TCP
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.IOException;
@@ -115,6 +118,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
      * Etiqueta para registros de depuración.
      */
     private static final String TAG = "MyActivity";
+    private static final String TAG2 = "MyActivity2";
     /**
      * Joystick derecho en pantalla para controlar el dron.
      */
@@ -200,27 +204,37 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
             String clientMessage = "";
 
             try {
-                Log.e(TAG, "Esperando conexión entrante...");
+                Log.e(TAG2, "Esperando conexión entrante...");
                 Socket clientSocket = serverSocket.accept();
-                Log.e(TAG, "Conexión aceptada de: " + clientSocket.getInetAddress());
+                Log.e(TAG2, "Conexión aceptada de: " + clientSocket.getInetAddress());
 
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream())), true);
 
                 clientMessage = in.readLine();
-                Log.e(TAG, "Mensaje recibido: " + clientMessage);
+                Log.e(TAG2, "Mensaje recibido: " + clientMessage);
 
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("PITCH", param1);
                 jsonObject.put("ROLL", param2);
                 jsonObject.put("YAW", param3);
                 jsonObject.put("ALTURA", param4);
-                out.println(jsonObject.toString());
-//                out.println("holpppp");
-                Log.e(TAG, "Mensaje enviado: " + jsonObject.toString());
+                //out.println(jsonObject);
+                out.println("Hello, MATLAB!");
+                Log.e(TAG2, "Mensaje enviado: " + "Hello, MATLAB!");
+                //clientMessage = in.readLine();
+                Log.e(TAG2, "Respuesta del servidor: " + clientMessage);
+
+
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
                 clientSocket.close();
-                Log.e(TAG, "Conexión con el cliente cerrada.");
+                Log.e(TAG2, "Conexión con el cliente cerrada.");
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -232,7 +246,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
 
         @Override
         protected void onPostExecute(String response) {
-            Log.e(TAG, "COMUNICACION TCP: " + response);
+            Log.e(TAG2, "COMUNICACION TCP: " + response);
 //            showToast(jsonObject.toString());
             showToast("Respuesta del servidor: " + response);
         }
