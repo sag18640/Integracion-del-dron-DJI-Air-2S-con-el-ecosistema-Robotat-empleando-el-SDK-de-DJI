@@ -212,7 +212,22 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream())), true);
 
                 clientMessage = in.readLine();
-                Log.e(TAG2, "Mensaje recibido: " + clientMessage);
+                if (clientMessage.equals("si")) {
+                    Log.e(TAG2, "El dron se movera hacia adelante");
+                    //LocationCoordinate3D currentLocation = flightControllerState.getAircraftLocation();
+                    //setAltitude(currentLocation,-119.0,2.0);
+                }else if (clientMessage.equals("no")){
+                    Log.e(TAG2, "El dron dejará de moverse hacia adelante");
+                    //setAltitude(currentLocation,0,2.0)
+                }else if (clientMessage.equals("rotate")){
+                    Log.e(TAG2, "El dron iniciará a rotar");
+                    //yaw = 20;
+                    //setSafeAltitude(2.0);
+                }else if (clientMessage.equals("stop_rotate")) {
+                    //yaw = 0; // Detiene el giro
+                    Log.e(TAG2,"El dron dejará de rotar");
+                }
+
 
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("PITCH", param1);
@@ -246,9 +261,50 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
 
         @Override
         protected void onPostExecute(String response) {
+            if (response.equals("si")) {
+                showToast("El dron se movera hacia adelante");
+            }else if (response.equals("no")){
+                showToast("El dron dejará de moverse hacia adelante");
+            }else if (response.equals("rotate")){
+                yaw = 20;
+                showToast("El dron iniciará a rotar");
+                if (!isVirtualStickDataTaskScheduled) {
+                    sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                    sendVirtualStickDataTimer = new Timer();
+                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
+                    isVirtualStickDataTaskScheduled = true;
+                }
+            }else if (response.equals("stop_rotate")){
+                yaw = 0;
+                showToast("El dron dejará de rotar");
+                if (!isVirtualStickDataTaskScheduled) {
+                    sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                    sendVirtualStickDataTimer = new Timer();
+                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
+                    isVirtualStickDataTaskScheduled = true;
+                }
+            }else if (response.equals("elevate")){
+                throttle=(float) 0.1;
+                showToast("El dron iniciará a elevarse");
+                if (!isVirtualStickDataTaskScheduled) {
+                    sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                    sendVirtualStickDataTimer = new Timer();
+                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
+                    isVirtualStickDataTaskScheduled = true;
+                }
+            }else if (response.equals("stop_elevate")){
+                throttle=(float)0;
+                showToast("El dron dejará de elevarse");
+                if (!isVirtualStickDataTaskScheduled) {
+                    sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                    sendVirtualStickDataTimer = new Timer();
+                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
+                    isVirtualStickDataTaskScheduled = true;
+                }
+            }
             Log.e(TAG2, "COMUNICACION TCP: " + response);
 //            showToast(jsonObject.toString());
-            showToast("Respuesta del servidor: " + response);
+
         }
     }
     /**
@@ -305,12 +361,12 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 switch (currentDesiredAction) {
                     case ASCEND:
                         // Cambiar la altitud a 2 metros y mover 5 metros hacia adelante
-                        setAltitude(currentLocation, 4.0);
-                        moveForward(currentLocation, 5.0);
+                        //setAltitude(currentLocation, 4.0);
+                        //moveForward(currentLocation, 5.0);
                         break;
                     case DESCEND:
                         // Cambiar la altitud a 1 metro
-                        setAltitude(currentLocation, 1.0);
+                        //setAltitude(currentLocation, 1.0);
                         break;
                     case NONE:
                         // No hacer nada
@@ -460,9 +516,10 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
             public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
 
                 Attitude attitude = flightState.getAttitude();
+                float probando=flightState.getTakeoffLocationAltitude();
                 float altitud2= altitud.getAltitude();
                 //connectToServer(attitude.pitch,attitude.yaw,attitude.roll,altitud2);
-                new TcpCommunicationTask(attitude.pitch, attitude.yaw, attitude.roll, (double) altitud2).execute();
+                new TcpCommunicationTask(attitude.pitch, attitude.yaw, attitude.roll, (double) probando).execute();
 
                 if (Math.abs(pX) < 0.02) {
                     pX = 0;
@@ -471,9 +528,9 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 if (Math.abs(pY) < 0.02) {
                     pY = 0;
                 }
-                float verticalJoyControlMaxSpeed = 4;
+                float verticalJoyControlMaxSpeed = 1;
                 float yawJoyControlMaxSpeed = 20;
-                Log.e(TAG,"PITCH: "+attitude.pitch+" YAW: "+attitude.yaw+" ROLL: "+attitude.roll+" Altura: " +altitud2);
+                Log.e(TAG,"PITCH: "+attitude.pitch+" YAW: "+attitude.yaw+" ROLL: "+attitude.roll+" Altura: " +probando);
 
                 ToastUtils.setResultToText(textView,
                         "PITCH : "
@@ -486,9 +543,9 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                                 + attitude.roll
                                 + ","
                                 + " ALTITUD : "
-                                + altitud2);
-                yaw = yawJoyControlMaxSpeed * pX;
-                throttle = verticalJoyControlMaxSpeed * pY;
+                                + probando);
+                //yaw = yawJoyControlMaxSpeed * pX;
+                //throttle = verticalJoyControlMaxSpeed * pY;
 
                 if (!isVirtualStickDataTaskScheduled) {
                     sendVirtualStickDataTask = new SendVirtualStickDataTask();
@@ -640,10 +697,10 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         handler.post(() -> Toast.makeText(getContext(), toastMsg, Toast.LENGTH_LONG).show());
 
     }
-    private void setAltitude(LocationCoordinate3D currentLocation, double newAltitude) {
+    private void setAltitude(LocationCoordinate3D currentLocation, double yaw ,double newAltitude) {
         // Use Virtual Stick to control altitude
         // You might want to ensure that Virtual Stick is enabled before reaching this point
-        FlightControlData controlData = new FlightControlData(0, 0, 0, (float) newAltitude);
+        FlightControlData controlData = new FlightControlData(0, 0, (float) yaw, (float) newAltitude);
         flightController.sendVirtualStickFlightControlData(controlData, new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
@@ -672,5 +729,18 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 }
             }
         });
+    }
+    private void setSafeAltitude(double altitude) {
+        if (flightController != null) {
+            FlightControlData controlData = new FlightControlData(0, 0, 0, (float) altitude);
+            flightController.sendVirtualStickFlightControlData(controlData, new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    if (djiError != null) {
+                        // Maneja el error
+                    }
+                }
+            });
+        }
     }
 }
