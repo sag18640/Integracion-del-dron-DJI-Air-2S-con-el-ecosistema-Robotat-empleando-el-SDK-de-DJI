@@ -360,11 +360,13 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
 
                 switch (currentDesiredAction) {
                     case ASCEND:
+                        yaw = 0.1;
                         // Cambiar la altitud a 2 metros y mover 5 metros hacia adelante
                         //setAltitude(currentLocation, 4.0);
                         //moveForward(currentLocation, 5.0);
                         break;
                     case DESCEND:
+                        yaw = 0;
                         // Cambiar la altitud a 1 metro
                         //setAltitude(currentLocation, 1.0);
                         break;
