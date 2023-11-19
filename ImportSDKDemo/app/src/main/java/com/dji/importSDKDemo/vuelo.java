@@ -3,6 +3,7 @@ import com.dji.importSDKDemo.MApplication;
 import com.dji.importSDKDemo.utils.OnScreenJoystick;
 import com.dji.importSDKDemo.utils.OnScreenJoystickListener;
 import com.dji.importSDKDemo.ToastUtils;
+import com.dji.importSDKDemo.logger;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.simulator.InitializationData;
@@ -106,6 +107,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
      * Coordenadas de altitud del dron.
      */
     private LocationCoordinate3D altitud=null;
+
+    private logger logi;
     /**
      * Simulador para simular el vuelo del dron.
      */
@@ -352,6 +355,12 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         layoutInflater.inflate(R.layout.vuelo, this, true);
         initParams();
         initUI();
+        try {
+            logi = new logger("miLogDeVuelo.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Manejo de excepciones
+        }
         flightController.setStateCallback(new FlightControllerState.Callback() {
             @Override
             public void onUpdate(FlightControllerState flightControllerState) {
@@ -360,7 +369,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
 
                 switch (currentDesiredAction) {
                     case ASCEND:
-                        yaw = 0.1;
+                        yaw = 10;
                         // Cambiar la altitud a 2 metros y mover 5 metros hacia adelante
                         //setAltitude(currentLocation, 4.0);
                         //moveForward(currentLocation, 5.0);
@@ -520,10 +529,10 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
             public void onTouch(OnScreenJoystick joystick, float pX, float pY) {
 
                 Attitude attitude = flightState.getAttitude();
-                float probando=flightState.getTakeoffLocationAltitude();
-                float altitud2= altitud.getAltitude();
+                LocationCoordinate3D prob=flightState.getAircraftLocation();
+                float altitud2= prob.getAltitude();
                 //connectToServer(attitude.pitch,attitude.yaw,attitude.roll,altitud2);
-                new TcpCommunicationTask(attitude.pitch, attitude.yaw, attitude.roll, (double) probando).execute();
+                new TcpCommunicationTask(attitude.pitch, attitude.yaw, attitude.roll, (double) altitud2).execute();
 
                 if (Math.abs(pX) < 0.02) {
                     pX = 0;
@@ -534,8 +543,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 }
                 float verticalJoyControlMaxSpeed = 1;
                 float yawJoyControlMaxSpeed = 20;
-                Log.e(TAG,"PITCH: "+attitude.pitch+" YAW: "+attitude.yaw+" ROLL: "+attitude.roll+" Altura: " +probando);
-
+                Log.e(TAG,"PITCH: "+attitude.pitch+" YAW: "+attitude.yaw+" ROLL: "+attitude.roll+" Altura: " +altitud2);
+                logi.logData(altitud2, (float) attitude.yaw);
                 ToastUtils.setResultToText(textView,
                         "PITCH : "
                                 + attitude.pitch
@@ -547,7 +556,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                                 + attitude.roll
                                 + ","
                                 + " ALTITUD : "
-                                + probando);
+                                + altitud2);
                 yaw = yawJoyControlMaxSpeed * pX;
                 throttle = verticalJoyControlMaxSpeed * pY;
 
@@ -599,6 +608,9 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                         Dialogos.showDialogBasedOnError(getContext(), djiError);
                     }
                 });
+                if (logi != null) {
+                    logi.close();
+                }
                 break;
             case R.id.btn_enable_virtual_stick:
                 flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
