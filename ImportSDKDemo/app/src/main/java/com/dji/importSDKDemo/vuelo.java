@@ -3,7 +3,7 @@ import com.dji.importSDKDemo.MApplication;
 import com.dji.importSDKDemo.utils.OnScreenJoystick;
 import com.dji.importSDKDemo.utils.OnScreenJoystickListener;
 import com.dji.importSDKDemo.ToastUtils;
-import com.dji.importSDKDemo.logger;
+import com.dji.importSDKDemo.loggerr;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.simulator.InitializationData;
@@ -108,7 +108,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
      */
     private LocationCoordinate3D altitud=null;
 
-    private logger logi;
+    private loggerr logi;
     /**
      * Simulador para simular el vuelo del dron.
      */
@@ -356,7 +356,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         initParams();
         initUI();
         try {
-            logi = new logger("miLogDeVuelo.txt");
+            logi = new loggerr("miLogDeVuelo.txt");
         } catch (IOException e) {
             e.printStackTrace();
             // Manejo de excepciones

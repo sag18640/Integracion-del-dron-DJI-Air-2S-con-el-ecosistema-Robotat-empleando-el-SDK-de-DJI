@@ -3,11 +3,11 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.IOException;
 
-public class logger {
+public class loggerr {
     private FileOutputStream fos;
     private OutputStreamWriter osw;
 
-    public logger(String filename) throws IOException {
+    public loggerr(String filename) throws IOException {
         fos = new FileOutputStream(filename, true); // true for append mode
         osw = new OutputStreamWriter(fos);
     }
