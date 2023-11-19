@@ -28,11 +28,13 @@ import dji.sdk.flightcontroller.FlightController;
 
 import dji.sdk.flightcontroller.Simulator;
 
+import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Service;
 import android.content.Context;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -356,11 +358,15 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         initParams();
         initUI();
         try {
-            logi = new loggerr("miLogDeVuelo.txt");
+            File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File logFile = new File(directory, "miLogDeVuelo.txt");
+            logi = new loggerr(logFile.getAbsolutePath());
+            Log.e(TAG, "No hay error"+logFile.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
-            // Manejo de excepciones
+            Log.e(TAG, "Error al inicializar Logger: " + e.getMessage());
         }
+
         flightController.setStateCallback(new FlightControllerState.Callback() {
             @Override
             public void onUpdate(FlightControllerState flightControllerState) {
@@ -543,8 +549,9 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 }
                 float verticalJoyControlMaxSpeed = 1;
                 float yawJoyControlMaxSpeed = 20;
-                Log.e(TAG,"PITCH: "+attitude.pitch+" YAW: "+attitude.yaw+" ROLL: "+attitude.roll+" Altura: " +altitud2);
-                logi.logData(altitud2, (float) attitude.yaw);
+                Log.e(TAG,"PITCH: "+attitude.pitch+" YAW: "+attitude.yaw+" ROLL: "+attitude.roll+" Altura: " +altitud2 + " latitud: "+prob.getLatitude()
+                        +" longitud: " +prob.getLongitude());
+                logi.logData(altitud2, (float) attitude.yaw, (float) attitude.pitch,(float) attitude.roll,prob.getLatitude(),prob.getLongitude());
                 ToastUtils.setResultToText(textView,
                         "PITCH : "
                                 + attitude.pitch
@@ -610,6 +617,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 });
                 if (logi != null) {
                     logi.close();
+                    Log.e(TAG,"logi cerrado");
                 }
                 break;
             case R.id.btn_enable_virtual_stick:

@@ -12,9 +12,9 @@ public class loggerr {
         osw = new OutputStreamWriter(fos);
     }
 
-    public void logData(float altitude, float yaw) {
+    public void logData(float altitude, float yaw,float pitch, float roll, double lat, double lng) {
         try {
-            String logEntry = "Altitude: " + altitude + ", Yaw: " + yaw + "\n";
+            String logEntry = "Altitude: " + altitude + ", Yaw: " + yaw + ", Pitch: "+ pitch + ", Roll: "+roll + ", Lat: "+ lat + ", Lng: "+lng + "\n";
             osw.write(logEntry);
         } catch (IOException e) {
             e.printStackTrace();
