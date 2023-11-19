@@ -268,39 +268,39 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
             }else if (response.equals("rotate")){
                 yaw = 20;
                 showToast("El dron iniciará a rotar");
-                if (!isVirtualStickDataTaskScheduled) {
-                    sendVirtualStickDataTask = new SendVirtualStickDataTask();
-                    sendVirtualStickDataTimer = new Timer();
-                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
-                    isVirtualStickDataTaskScheduled = true;
-                }
+                //if (!isVirtualStickDataTaskScheduled) {
+                    //sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                    //sendVirtualStickDataTimer = new Timer();
+                    //sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
+//                    isVirtualStickDataTaskScheduled = true;
+                //}
             }else if (response.equals("stop_rotate")){
                 yaw = 0;
                 showToast("El dron dejará de rotar");
-                if (!isVirtualStickDataTaskScheduled) {
-                    sendVirtualStickDataTask = new SendVirtualStickDataTask();
-                    sendVirtualStickDataTimer = new Timer();
-                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
-                    isVirtualStickDataTaskScheduled = true;
-                }
+                //if (!isVirtualStickDataTaskScheduled) {
+                    //sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                    //sendVirtualStickDataTimer = new Timer();
+                    //sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
+                    //isVirtualStickDataTaskScheduled = true;
+                //}
             }else if (response.equals("elevate")){
-                throttle=(float) 0.1;
+                throttle=(float) 0.6;
                 showToast("El dron iniciará a elevarse");
-                if (!isVirtualStickDataTaskScheduled) {
-                    sendVirtualStickDataTask = new SendVirtualStickDataTask();
-                    sendVirtualStickDataTimer = new Timer();
-                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
-                    isVirtualStickDataTaskScheduled = true;
-                }
+                //if (!isVirtualStickDataTaskScheduled) {
+                    //sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                    //sendVirtualStickDataTimer = new Timer();
+                    //sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 20);
+                    //isVirtualStickDataTaskScheduled = true;
+                //}
             }else if (response.equals("stop_elevate")){
                 throttle=(float)0;
                 showToast("El dron dejará de elevarse");
-                if (!isVirtualStickDataTaskScheduled) {
-                    sendVirtualStickDataTask = new SendVirtualStickDataTask();
-                    sendVirtualStickDataTimer = new Timer();
-                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
-                    isVirtualStickDataTaskScheduled = true;
-                }
+                //if (!isVirtualStickDataTaskScheduled) {
+                    //sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                    //sendVirtualStickDataTimer = new Timer();
+                    //sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 20);
+                    //isVirtualStickDataTaskScheduled = true;
+                //}
             }
             Log.e(TAG2, "COMUNICACION TCP: " + response);
 //            showToast(jsonObject.toString());
@@ -392,8 +392,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
             }
         }
         flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
-        flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
         flightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
+        flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
         flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
 
         if (flightState == null) {
@@ -441,6 +441,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         btnEnableVirtualStick.setOnClickListener(this);
         btnDisableVirtualStick.setOnClickListener(this);
         btnSimulator.setOnCheckedChangeListener(vuelo.this);
+        flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+        flightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
 
         if (isSimulatorActived) {
             btnSimulator.setChecked(true);
@@ -503,7 +505,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 if (!isVirtualStickDataTaskScheduled) {
                     sendVirtualStickDataTask = new SendVirtualStickDataTask();
                     sendVirtualStickDataTimer = new Timer();
-                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 200);
+                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 10);
                     isVirtualStickDataTaskScheduled = true;
                 }
 
@@ -544,13 +546,13 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                                 + ","
                                 + " ALTITUD : "
                                 + probando);
-                //yaw = yawJoyControlMaxSpeed * pX;
-                //throttle = verticalJoyControlMaxSpeed * pY;
+                yaw = yawJoyControlMaxSpeed * pX;
+                throttle = verticalJoyControlMaxSpeed * pY;
 
                 if (!isVirtualStickDataTaskScheduled) {
                     sendVirtualStickDataTask = new SendVirtualStickDataTask();
                     sendVirtualStickDataTimer = new Timer();
-                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 200);
+                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 10);
                     isVirtualStickDataTaskScheduled = true;
                 }
 
