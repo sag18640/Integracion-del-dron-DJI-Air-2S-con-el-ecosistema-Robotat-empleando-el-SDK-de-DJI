@@ -361,7 +361,12 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
         initUI();
         try {
             File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File logFile = new File(directory, "miLogDeVuelo.txt");
+
+// Obtener la fecha y hora actuales
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String fileName = "miLogDeVuelo_" + timeStamp + ".txt";
+
+            File logFile = new File(directory, fileName);
             logi = new loggerr(logFile.getAbsolutePath());
             Log.e(TAG, "No hay error"+logFile.getAbsolutePath());
         } catch (IOException e) {
@@ -521,8 +526,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 float pitchJoyControlMaxSpeed = 10;
                 float rollJoyControlMaxSpeed = 10;
 
-                pitch = pitchJoyControlMaxSpeed * pY;
-                roll = rollJoyControlMaxSpeed * pX;
+                //pitch = pitchJoyControlMaxSpeed * pY;
+                //roll = rollJoyControlMaxSpeed * pX;
 
 
                 if (!isVirtualStickDataTaskScheduled) {
@@ -570,8 +575,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                                 + ","
                                 + " ALTITUD : "
                                 + altitud2);
-                yaw = yawJoyControlMaxSpeed * pX;
-                throttle = verticalJoyControlMaxSpeed * pY;
+                //yaw = yawJoyControlMaxSpeed * pX;
+                //throttle = verticalJoyControlMaxSpeed * pY;
 
                 if (!isVirtualStickDataTaskScheduled) {
                     sendVirtualStickDataTask = new SendVirtualStickDataTask();
