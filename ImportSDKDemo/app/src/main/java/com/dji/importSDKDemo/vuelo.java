@@ -522,8 +522,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 float pitchJoyControlMaxSpeed = 10;
                 float rollJoyControlMaxSpeed = 10;
 
-                pitch = pitchJoyControlMaxSpeed * pY;
-                roll = rollJoyControlMaxSpeed * pX;
+                //pitch = pitchJoyControlMaxSpeed * pY;
+                //roll = rollJoyControlMaxSpeed * pX;
 
 
                 if (!isVirtualStickDataTaskScheduled) {
@@ -571,8 +571,8 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                                 + ","
                                 + " ALTITUD : "
                                 + altitud2);
-                yaw = yawJoyControlMaxSpeed * pX;
-                throttle = verticalJoyControlMaxSpeed * pY;
+                //yaw = yawJoyControlMaxSpeed * pX;
+                //throttle = verticalJoyControlMaxSpeed * pY;
 
                 if (!isVirtualStickDataTaskScheduled) {
                     sendVirtualStickDataTask = new SendVirtualStickDataTask();
