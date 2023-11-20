@@ -29,6 +29,8 @@ import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.flightcontroller.Simulator;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -375,13 +377,17 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
 
                 switch (currentDesiredAction) {
                     case ASCEND:
-                        yaw = 10;
+                        //yaw = 10;
+                        //throttle=(float)0.1;
+                        pitch=1;
                         // Cambiar la altitud a 2 metros y mover 5 metros hacia adelante
                         //setAltitude(currentLocation, 4.0);
                         //moveForward(currentLocation, 5.0);
                         break;
                     case DESCEND:
-                        yaw = 0;
+                        pitch=0;
+                        //throttle=0;
+                        //yaw = 0;
                         // Cambiar la altitud a 1 metro
                         //setAltitude(currentLocation, 1.0);
                         break;
