@@ -173,7 +173,11 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
     private enum DesiredAction {
         NONE,
         ASCEND,
-        DESCEND
+        DESCEND,
+        ROTATE,
+        DONTROTATE,
+        PITCH,
+        DONTPITCH
     }
     private DesiredAction currentDesiredAction = DesiredAction.NONE;
     /**
@@ -214,6 +218,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 Log.e(TAG2, "Esperando conexión entrante...");
                 Socket clientSocket = serverSocket.accept();
                 Log.e(TAG2, "Conexión aceptada de: " + clientSocket.getInetAddress());
+                showToast("Conexión aceptada de: " + clientSocket.getInetAddress());
 
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream())), true);
@@ -273,7 +278,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
             }else if (response.equals("no")){
                 showToast("El dron dejará de moverse hacia adelante");
             }else if (response.equals("rotate")){
-                yaw = 20;
+                currentDesiredAction = DesiredAction.ROTATE;
                 showToast("El dron iniciará a rotar");
                 //if (!isVirtualStickDataTaskScheduled) {
                     //sendVirtualStickDataTask = new SendVirtualStickDataTask();
@@ -282,7 +287,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
 //                    isVirtualStickDataTaskScheduled = true;
                 //}
             }else if (response.equals("stop_rotate")){
-                yaw = 0;
+                currentDesiredAction = DesiredAction.DONTROTATE;
                 showToast("El dron dejará de rotar");
                 //if (!isVirtualStickDataTaskScheduled) {
                     //sendVirtualStickDataTask = new SendVirtualStickDataTask();
@@ -291,7 +296,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                     //isVirtualStickDataTaskScheduled = true;
                 //}
             }else if (response.equals("elevate")){
-                throttle=(float) 0.6;
+                currentDesiredAction = DesiredAction.ASCEND;
                 showToast("El dron iniciará a elevarse");
                 //if (!isVirtualStickDataTaskScheduled) {
                     //sendVirtualStickDataTask = new SendVirtualStickDataTask();
@@ -300,13 +305,31 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                     //isVirtualStickDataTaskScheduled = true;
                 //}
             }else if (response.equals("stop_elevate")){
-                throttle=(float)0;
+                currentDesiredAction = DesiredAction.DESCEND;
                 showToast("El dron dejará de elevarse");
                 //if (!isVirtualStickDataTaskScheduled) {
                     //sendVirtualStickDataTask = new SendVirtualStickDataTask();
                     //sendVirtualStickDataTimer = new Timer();
                     //sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 20);
                     //isVirtualStickDataTaskScheduled = true;
+                //}
+            }else if (response.equals("forward")){
+                currentDesiredAction = DesiredAction.PITCH;
+                showToast("El dron iniciará a moverse");
+                //if (!isVirtualStickDataTaskScheduled) {
+                //sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                //sendVirtualStickDataTimer = new Timer();
+                //sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 20);
+                //isVirtualStickDataTaskScheduled = true;
+                //}
+            }else if (response.equals("stop_forward")){
+                currentDesiredAction = DesiredAction.DONTPITCH;
+                showToast("El dron dejará de moverse");
+                //if (!isVirtualStickDataTaskScheduled) {
+                //sendVirtualStickDataTask = new SendVirtualStickDataTask();
+                //sendVirtualStickDataTimer = new Timer();
+                //sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 0, 20);
+                //isVirtualStickDataTaskScheduled = true;
                 //}
             }
             Log.e(TAG2, "COMUNICACION TCP: " + response);
@@ -382,19 +405,31 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
 
                 switch (currentDesiredAction) {
                     case ASCEND:
-                        //yaw = 10;
-                        //throttle=(float)0.1;
-                        pitch=1;
+                        //yaw = 20;
+                        throttle=(float)0.1;
+                        //pitch=(float)0.1;
                         // Cambiar la altitud a 2 metros y mover 5 metros hacia adelante
                         //setAltitude(currentLocation, 4.0);
                         //moveForward(currentLocation, 5.0);
                         break;
                     case DESCEND:
-                        pitch=0;
-                        //throttle=0;
+                        //pitch=0;
+                        throttle=0;
                         //yaw = 0;
                         // Cambiar la altitud a 1 metro
                         //setAltitude(currentLocation, 1.0);
+                        break;
+                    case ROTATE:
+                        yaw = 20;
+                        break;
+                    case DONTROTATE:
+                        yaw=0;
+                        break;
+                    case PITCH:
+                        pitch=(float)0.1;
+                        break;
+                    case DONTPITCH:
+                        pitch=0;
                         break;
                     case NONE:
                         // No hacer nada
@@ -533,7 +568,7 @@ public class vuelo extends RelativeLayout implements View.OnClickListener, Compo
                 if (!isVirtualStickDataTaskScheduled) {
                     sendVirtualStickDataTask = new SendVirtualStickDataTask();
                     sendVirtualStickDataTimer = new Timer();
-                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 100, 10);
+                    sendVirtualStickDataTimer.schedule(sendVirtualStickDataTask, 10, 10);
                     isVirtualStickDataTaskScheduled = true;
                 }
 
