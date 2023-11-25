@@ -476,7 +476,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(DJIError djiError) {
-                        ToastUtils.setResultToToast("db load failure ! get version error : " + djiError.getDescription());
+                        ToastUtils.setResultToToast("Puede ingresar al menú");
 
                     }
                 });
